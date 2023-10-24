@@ -1,0 +1,122 @@
+class Cliente:
+    def __init__(self, nome, cpf):
+        self.nome = nome
+        self.cpf = cpf
+        self.conta_corrente = ContaCorrente()
+
+class ContaCorrente:
+    def __init__(self):
+        self.saldo = 0
+        self.extrato = []
+        self.numero_saques = 0
+        self.LIMITE_SAQUES = 3
+
+def depositar(cliente):
+    valor_deposito = float(input("Digite o valor do depósito: "))
+    if valor_deposito > 0:
+        cliente.conta_corrente.saldo += valor_deposito
+        cliente.conta_corrente.extrato.append(f"Depósito: +R$ {valor_deposito:.2f}")
+        print(f"Depósito bem sucedido. Novo saldo: R$ {cliente.conta_corrente.saldo:.2f}")
+    else:
+        print("O valor para depósito deve ser positivo.")
+
+def sacar(cliente):
+    conta = cliente.conta_corrente
+    if conta.numero_saques >= conta.LIMITE_SAQUES:
+        print("Você atingiu seu limite diário de saques.")
+    else:
+        valor_saque = float(input("Digite o valor do saque: "))
+        if 0 < valor_saque <= 500 and valor_saque <= conta.saldo and conta.numero_saques < conta.LIMITE_SAQUES:
+            conta.saldo -= valor_saque
+            conta.extrato.append(f"Saque: -R$ {valor_saque:.2f}")
+            conta.numero_saques += 1
+            print(f"Saque bem-sucedido. Retire o seu dinheiro no dispenser. Novo saldo: R$ {conta.saldo:.2f}")
+        elif valor_saque > 500:
+            print("O limite máximo para saque é de R$ 500.00")
+        elif valor_saque > conta.saldo:
+            print(f"Saldo insuficiente para saque. Saldo atual: R$ {conta.saldo:.2f}")
+
+def mostrar_extrato(cliente):
+    conta = cliente.conta_corrente
+    print(f"=== Extrato de {cliente.nome} ===")
+    if not conta.extrato:
+        print("Não foram realizadas movimentações.")
+    else:
+        for movimentacao in conta.extrato:
+            print(movimentacao)
+    print(f"Saldo atual: R$ {conta.saldo:.2f}")
+    print("================")
+
+def main():
+    clientes = []
+    cliente_logado = None
+
+    while True:
+        if cliente_logado is None:
+            opcao = input(menu_deslogado)
+        else:
+            opcao = input(menu_logado)
+
+        if opcao == "c":
+            nome = input("Digite o nome do cliente: ")
+            cpf = int(input("Digite o CPF do cliente: "))
+            cliente = Cliente(nome, cpf)
+            clientes.append(cliente)
+            print(f"Cliente {nome} cadastrado com sucesso!")
+
+        elif opcao == "l":
+            cpf = int(input("Digite o CPF do cliente: "))
+            cliente = encontrar_cliente(clientes, cpf)
+            if cliente:
+                cliente_logado = cliente
+                print(f"Cliente {cliente.nome} logado com sucesso!")
+            else:
+                print("Cliente não encontrado.")
+
+        elif opcao == "d":
+            if cliente_logado:
+                depositar(cliente_logado)
+            else:
+                print("Você deve fazer login em uma conta antes de realizar um depósito.")
+
+        elif opcao == "s":
+            if cliente_logado:
+                sacar(cliente_logado)
+            else:
+                print("Você deve fazer login em uma conta antes de realizar um saque.")
+
+        elif opcao == "e":
+            if cliente_logado:
+                mostrar_extrato(cliente_logado)
+            else:
+                print("Você deve fazer login em uma conta antes de visualizar o extrato.")
+
+        elif opcao == "q":
+            print("Obrigado por utilizar nosso sistema!")
+            break
+
+        else:
+            print("Operação inválida, por favor selecione uma das opções válidas.")
+
+def encontrar_cliente(clientes, cpf):
+    for cliente in clientes:
+        if cliente.cpf == cpf:
+            return cliente
+    return None
+
+menu_deslogado = """
+[c] Cadastrar Cliente
+[l] Login
+[q] Sair
+=> """
+
+menu_logado = """
+[d] Depositar
+[s] Sacar
+[e] Extrato
+[l] Logout
+[q] Sair
+=> """
+
+if __name__ == "__main__":
+    main()
